@@ -81,6 +81,7 @@ struct Card {
 struct _player
 {
 int wins;
+int history;
 int cash;
 int hard_total;
 int soft_total;
@@ -226,12 +227,13 @@ void won(player** p)
 {
 if((*p)->cash==-1){
 printf("\nYou lost :( Dealer Blackjacked you\n");
-(*p)->wins++;
+(*p)->history =  ((*p)->history << 1) | 0x1; 
 }
-else
+else{
 printf("\nBlackjack! You Won the round !\n");
-(*p)->wins++;
 (*p)->cash+=cash_on_table;
+}
+(*p)->wins++;
 cash_on_table=0;
 return;
 }
@@ -241,9 +243,11 @@ int check_blackjack(player **user, player **dealer)
 //assert((*user)->hard_total!=21   &&   (*dealer)->hard_total!=21);
 if((*user)->hard_total==21){
 won(user);
+(*dealer)->history =  ((*dealer)->history << 1) | 0x0; 
 return ROUND_COMPLETE;
 }else if((*user)->hard_total>21  &&  (*user)->soft_total>21 ){
 printf("\nBusted :(\n");
+won(dealer);
 return ROUND_COMPLETE;
 }
 
@@ -252,6 +256,7 @@ won(dealer);
 return ROUND_COMPLETE;
 }else if((*dealer)->hard_total>21 && (*dealer)->soft_total>21 ){
 printf("\nDealer Busted :)\n");
+won(user);
 return ROUND_COMPLETE;
 }
 
@@ -288,7 +293,7 @@ pull=draw_card(rand()%52+1);
 update_total(dealer,pull);
 }
 
-print_handcard(*dealer,1);
+print_handcard(*dealer,2);
 print_handcard(*user,2);
 
 return check_blackjack(user,dealer);
@@ -337,35 +342,159 @@ print_handcard(*user,i);
 return check_blackjack(user,dealer);
 }
 
+int make_decision(player **user, player **dealer)
+{
+int bit_set=0,temp,i,pull;
+temp=(*dealer)->history;
+while(temp)
+{
+temp&=temp-1;
+bit_set++;
+}
+pull=draw_card(rand()%52+1);
+update_total(dealer,pull);
+
+for(i=0;(*user)->cards_in_hand[i]!=0;i++);
+print_handcard(*dealer,i);
+
+return check_blackjack(user,dealer);
+}
+
 int stand(player **user, player **dealer)
 {
 
-int pull,i;
+int pull,i,ret;
+/*Dealer plays till Round is complete*/
+
+while(1){
 for(i=0;(*dealer)->cards_in_hand[i]!=0;i++);
 
-if((*dealer)->soft_total==17 || (*dealer)->hard_total<10 ){
-pull=draw_card(rand()%52+1);
+if((*dealer)->soft_total == (*dealer)->hard_total)
+{/*Code for hardness*/
+	if((*user)->soft_total == (*user)->hard_total)
+	{
+		if( ((*user)->hard_total >= (*dealer)->hard_total) )
+		{
+		ret = make_decision(user,dealer);				 
+		}
+		else
+		{
+		won(dealer);
+		ret = ROUND_COMPLETE;
+		}
+	}
+	else
+	{
+		if((*user)->hard_total > 21)		
+		{
+			if((*user)->soft_total >= (*dealer)->hard_total)
+			{
+			ret = make_decision(user,dealer);
+			}
+			else
+			{
+			won(dealer);
+			ret = ROUND_COMPLETE;
+			}
+		}
+		else
+		{
+			if((*user)->hard_total >= (*dealer)->hard_total)
+			{
+			ret = make_decision(user,dealer);
+			}
+			else
+			{
+			won(dealer);
+			ret = ROUND_COMPLETE;
+			}
+			
+		}
+
+	}
+
 }
 else
-/*Here comes the main AI*/
-pull=draw_card(rand()%52+1);
+{
+	if( ((*dealer)->soft_total == 6 ) &&  ((*dealer)->hard_total==17) )
+	{
+	pull=draw_card(rand()%52+1);
+	update_total(dealer,pull);
 
+	for(i=0;(*user)->cards_in_hand[i]!=0;i++);
+	print_handcard(*dealer,i);
+	ret=check_blackjack(user,dealer);
+	}
+	
+	else if ((*dealer)->hard_total > 21)
+	{
+	
+	if((*user)->hard_total > 21)		
+		{
+			if((*user)->soft_total >= (*dealer)->soft_total)
+			{
+				ret = make_decision(user,dealer);
+			}
+			else
+			{
+				won(dealer);
+				ret = ROUND_COMPLETE;
+			}
+		}
+	else
+		{
+			if((*user)->hard_total >= (*dealer)->soft_total)
+			{
+				ret = make_decision(user,dealer);
+			}
+			else
+			{
+				won(dealer);
+				ret = ROUND_COMPLETE;
+			}
+			
+		}
+	
+	} 
+	else
+	{
 
-update_total(dealer,pull);
-print_handcard(*dealer,i+1);
+	if((*user)->hard_total > 21)		
+		{
+			if((*user)->soft_total >= (*dealer)->hard_total)
+			{
+				ret = make_decision(user,dealer);
+			}
+			else
+			{
+				won(dealer);
+				ret = ROUND_COMPLETE;
+			}
+		}
+	else
+		{
+			if((*user)->hard_total >= (*dealer)->hard_total)
+			{
+				ret = make_decision(user,dealer);
+			}
+			else
+			{
+				won(dealer);
+				ret = ROUND_COMPLETE;
+			}
+			
+		}
 
-if(check_blackjack(user,dealer)==ROUND_IN_PROGRESS){
-if((*user)->soft_total==(*user)->hard_total && (*dealer)->soft_total==(*dealer)->hard_total ){
-if((*user)->hard_total > (*dealer)->hard_total)
-won(user);
-else 
-won(dealer);
+	}
+
 }
-}
+
+if (ret == ROUND_COMPLETE)
 return ROUND_COMPLETE;
+
 }
 
-
+}
 
 void play(player **user, player** dealer)
 {
