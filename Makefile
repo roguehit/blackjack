@@ -1,15 +1,12 @@
 CC=gcc
-SRC=blackapple.c 
-DEBUG=-DDEBUG
+SRC=blackapple.c
 CFLAGS=-Wall -g
 
-apple: blackapple.c
+apple:  $(SRC)
 	$(CC) $(SRC) $(CFLAGS) -o apple 
 
-.phony: clean debug
+.phony: clean
 
-debug:
-	$(CC) $(SRC)  $(CFLAGS) $(DEBUG) -o apple 
 clean:
 	@rm apple 
 	@echo Cleaned
