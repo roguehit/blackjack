@@ -2,7 +2,7 @@ CC=gcc
 SRC=blackjack.c
 CFLAGS=-Wall -g
 
-apple:  $(SRC)
+blackjack:  $(SRC)
 	$(CC) $(SRC) $(CFLAGS) -o blackjack
 
 .phony: clean

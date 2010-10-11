@@ -313,7 +313,7 @@ int make_decision(player **user, player **dealer)
 	/* Simple AI 
 	   Always draw if total is < 17
 	   if total > 17 , draw on the basis of
-	   return value of rand()>>30
+	   binary return value of rand()>>30
 	 */
 
 	if( ((*dealer)->hard_total < 17) || rand()>>30  ){
