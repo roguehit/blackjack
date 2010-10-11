@@ -1,12 +1,12 @@
 CC=gcc
-SRC=blackapple.c
+SRC=blackjack.c
 CFLAGS=-Wall -g
 
 apple:  $(SRC)
-	$(CC) $(SRC) $(CFLAGS) -o apple 
+	$(CC) $(SRC) $(CFLAGS) -o blackjack
 
 .phony: clean
 
 clean:
-	@rm apple 
+	@rm blackjack 
 	@echo Cleaned
