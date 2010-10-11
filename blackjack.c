@@ -385,6 +385,7 @@ int stand(player **user, player **dealer)
 		}
 		else
 		{
+			/*Soft 17 Condition*/
 			if( ((*dealer)->soft_total == 6 ) &&  ((*dealer)->hard_total==17) )
 			{
 				pull=draw_card(rand()%52+1);
