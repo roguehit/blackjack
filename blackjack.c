@@ -41,7 +41,7 @@ int draw_card(int index)
 #endif
 	draw_card( index%52+1 );
 
-
+	return index;
 }
 
 /*
